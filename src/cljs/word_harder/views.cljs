@@ -11,10 +11,9 @@
    :level :level1])
 
 (defn new-game-button []
-  [re-com/hyperlink-href
+  [re-com/button
    :label "New Game"
-   :class "btn btn-default"
-   :href "#/game"])
+   :on-click #(re-frame/dispatch [:game/new])])
 
 (defn join-game-button []
   [re-com/hyperlink-href
@@ -57,8 +56,9 @@
    :gap "0.5em"
    :children [[settings-modal] [hint-display] [help-modal]]])
 
-(defn word-button [word]
-  (let [selected-word (re-frame/subscribe [:selected-word])]
+(defn word-button [space]
+  (let [selected-word (re-frame/subscribe [:selected-word])
+        word (:word space)]
     [re-com/radio-button
      :label word
      :value word
@@ -70,11 +70,11 @@
      :on-change #(re-frame/dispatch [:selected-word word])]))
 
 (defn game-board []
-  (let [word-list (re-frame/subscribe [:word-list])]
+  (let [board (re-frame/subscribe [:board])]
     (fn []
       [re-com/h-box
        :gap "0.2mm"
-       :children (doall (map word-button @word-list))])))
+       :children (doall (map word-button @board))])))
 
 (defn hint-input []
   (let [new-hint (re-frame/subscribe [:hint-input])]

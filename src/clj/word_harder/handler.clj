@@ -1,5 +1,6 @@
 (ns word-harder.handler
-  (:require [compojure.core :refer [GET POST defroutes]]
+  (:require [word-harder.game :as game]
+            [compojure.core :refer [GET POST defroutes]]
             [compojure.route :refer [resources]]
             [ring.util.response :refer [resource-response content-type]]
             [clojure.core.async :as async :refer (<! <!! >! >!! put! chan go go-loop)]
@@ -59,26 +60,27 @@
     (when ?reply-fn
       (?reply-fn {:umatched-event-as-echoed-from-from-server event}))))
 
-(defmethod -event-msg-handler :chat/msg
+(defmethod -event-msg-handler :game/new
   [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
-  (debugf "Chat message request: %s" (str ring-req))
-  (let [uids (:any @connected-uids)]
+  (debugf "new game")
+  (let [uids (:any @connected-uids)
+        board (game/create-board)
+        game-info {:board board
+                   :over? false
+                   :winner nil
+                   :turn nil
+                   :hint nil
+                   :player1 uid
+                   :player2 nil}]
     (doseq [to-uid uids]
       (chsk-send! to-uid
-                  [:chat/msg
-                   {:what-is-this "A chat message"
-                    :how-often "Whenever one is received"
+                  [:game/new
+                   {:what-is-this "New game initial data transfer"
+                    :how-often "Whenever a game is started and both
+                  players have joined."
                     :to-whom to-uid
                     :from uid
-                    :msg ?data}]))))
-
-(defmethod -event-msg-handler :chat/user
-  [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
-  (debugf "new user: %s" (:name ?data))
-  (when ?reply-fn
-    (?reply-fn true)))
-
-;; TODO Add your (defmethod -event-msg-handler <event-id> [ev-msg] <body>)s here...
+                    :msg game-info}]))))
 
 ;;;; Sente event router (our `event-msg-handler` loop)
 

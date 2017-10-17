@@ -1,9 +1,9 @@
 (defproject word-harder "0.1.0-SNAPSHOT"
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.9.908"]
+                 [org.clojure/clojurescript "1.9.946"]
                  [reagent "0.7.0"]
                  [re-frame "0.10.1"]
-                 [org.clojure/core.async "0.2.391"]
+                 [org.clojure/core.async "0.3.443"]
                  [re-com "2.1.0"]
                  [secretary "1.2.3"]
                  [compojure "1.6.0"]
@@ -13,9 +13,13 @@
                  [http-kit "2.2.0"]
                  [com.taoensso/encore "2.91.1"]
                  [com.taoensso/sente "1.11.0"]
-                 [com.taoensso/timbre "4.10.0"]]
+                 [com.taoensso/timbre "4.10.0"]
+                 [com.layerware/hugsql "0.4.7"]
+                 [com.h2database/h2 "1.4.196"]
+                 [com.andrewmcveigh/cljs-time "0.5.0"]
+                 [clj-yaml "0.4.0"]]
 
-  :plugins [[lein-cljsbuild "1.1.5"]]
+  :plugins [[lein-cljsbuild "1.1.7"]]
 
   :min-lein-version "2.5.3"
 
@@ -29,17 +33,19 @@
   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
   :aliases {"dev" ["do" "clean"
-                        ["pdo" ["figwheel" "dev"]]]
+                   ["pdo" ["figwheel" "dev"]]]
             "build" ["do" "clean"
-                          ["cljsbuild" "once" "min"]]}
+                     ["cljsbuild" "once" "min"]]
+            "migrate" ["run" "-m" "user/migrate"]}
 
   :profiles
   {:dev
    {:dependencies [[binaryage/devtools "0.9.4"]
-                   [figwheel-sidecar "0.5.13"]
-                   [com.cemerick/piggieback "0.2.2"]]
+                   [figwheel-sidecar "0.5.14"]
+                   [com.cemerick/piggieback "0.2.2"]
+                   [re-frisk "0.5.0"]]
 
-    :plugins      [[lein-figwheel "0.5.13"]
+    :plugins      [[lein-figwheel "0.5.14"]
                    [lein-pdo "0.1.1"]]}}
 
   :cljsbuild
@@ -52,7 +58,8 @@
                     :output-dir           "resources/public/js/compiled/out"
                     :asset-path           "js/compiled/out"
                     :source-map-timestamp true
-                    :preloads             [devtools.preload]
+                    :preloads             [devtools.preload
+                                           re-frisk.preload]
                     :external-config      {:devtools/config {:features-to-install :all}}
                     }}
 

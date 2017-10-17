@@ -25,6 +25,11 @@
   [[_ {:as data :keys [from msg]}]]
   (dispatch [:chat/recv-msg from msg]))
 
+(defmethod push-msg-handler :game/new
+  [[_ {:as data :keys [msg]}]]
+  (timbre/debug "new game")
+  (dispatch [:board (:board msg)]))
+
 (defmulti -event-msg-handler
   "Multimethod to handle Sente `event-msg`s"
   :id)

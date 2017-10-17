@@ -28,36 +28,6 @@
    (:selected-word db)))
 
 (re-frame/reg-sub
- :word-list
+ :board
  (fn [db]
-   (:word-list db)))
-
-(re-frame/reg-sub
- :user
- (fn [db]
-   (:user db)))
-
-(re-frame/reg-sub
- :chat
- (fn [db]
-   (:chat db)))
-
-(re-frame/reg-sub
- :chat/msg-input
- (fn [db]
-   (-> db :chat :msg-input)))
-
-(re-frame/reg-sub
- :chat/msg-list
- (fn [db]
-   (-> db :chat :msg-list)))
-
-(re-frame/reg-sub
- :chat/enabled?
- (fn [db]
-   (-> db :chat :enabled?)))
-
-(re-frame/reg-sub
- :chat/ready?
- (fn [db]
-   (-> db :chat :ready?)))
+   (:board db)))
