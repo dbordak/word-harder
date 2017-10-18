@@ -5,7 +5,8 @@
    [cljs.core.async :as async :refer (put! chan)]
    [taoensso.sente  :as sente :refer (cb-success?)]
    [taoensso.timbre :as timbre]
-   [re-frame.core :refer [dispatch]]))
+   [re-frame.core :refer [dispatch]]
+   [secretary.core :as secretary]))
 
 (let [{:keys [chsk ch-recv send-fn state]}
       (sente/make-channel-socket! "/chsk" {:type :auto})]
@@ -25,10 +26,17 @@
   [[_ {:as data :keys [from msg]}]]
   (dispatch [:chat/recv-msg from msg]))
 
-(defmethod push-msg-handler :game/new
+(defmethod push-msg-handler :game/create
   [[_ {:as data :keys [msg]}]]
-  (timbre/debug "new game")
-  (dispatch [:board (:board msg)]))
+  (timbre/debug "Game object created, awaiting player 2.")
+  (dispatch [:set-game-id msg])
+  (dispatch [:set-active-panel :lobby-panel]))
+
+(defmethod push-msg-handler :game/start
+  [[_ {:as data :keys [msg]}]]
+  (timbre/debug "Player 2 joined, game starting")
+  (dispatch [:set-game-info msg])
+  (dispatch [:set-active-panel :game-panel]))
 
 (defmulti -event-msg-handler
   "Multimethod to handle Sente `event-msg`s"

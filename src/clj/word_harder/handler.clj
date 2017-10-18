@@ -60,27 +60,32 @@
     (when ?reply-fn
       (?reply-fn {:umatched-event-as-echoed-from-from-server event}))))
 
-(defmethod -event-msg-handler :game/new
+(defmethod -event-msg-handler :game/create
   [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
-  (debugf "new game")
-  (let [uids (:any @connected-uids)
-        board (game/create-board)
-        game-info {:board board
-                   :over? false
-                   :winner nil
-                   :turn nil
-                   :hint nil
-                   :player1 uid
-                   :player2 nil}]
-    (doseq [to-uid uids]
-      (chsk-send! to-uid
-                  [:game/new
+  (debugf "Creating new game; waiting for second player.")
+  (let [game-id (game/create-game uid)]
+    (chsk-send! uid
+                [:game/create
+                 {:what-is-this "New game created, awaiting second player."
+                  :how-often "Whenever someone presses 'New Game'."
+                  :to-whom uid
+                  :from nil
+                  :msg game-id}])))
+
+(defmethod -event-msg-handler :game/join
+  [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
+  (debugf "Initializing game %d, second player %s joined." ?data uid)
+  (game/init-game ?data uid)
+  (let [game-info (game/get-game ?data)]
+    (doseq [player [(:p1 game-info) uid]]
+      (chsk-send! player
+                  [:game/start
                    {:what-is-this "New game initial data transfer"
-                    :how-often "Whenever a game is started and both
-                  players have joined."
-                    :to-whom to-uid
-                    :from uid
-                    :msg game-info}]))))
+                    :how-often "Whenever a game is started and
+                      both players have joined."
+                    :from nil
+                    :to-whom player
+                    :msg (game/hide-game-info game-info player)}]))))
 
 ;;;; Sente event router (our `event-msg-handler` loop)
 

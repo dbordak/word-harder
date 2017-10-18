@@ -21,8 +21,10 @@
   (defroute "/" []
     (re-frame/dispatch [:set-active-panel :home-panel]))
 
-  (defroute "/game" []
-    (re-frame/dispatch [:set-active-panel :game-panel]))
+  (defroute "/game/:game-id" {:as params}
+    (do
+      (re-frame/dispatch [:set-game-id (js/parseInt (:game-id params))])
+      (re-frame/dispatch [:set-active-panel :game-panel])))
 
 
   ;; --------------------
