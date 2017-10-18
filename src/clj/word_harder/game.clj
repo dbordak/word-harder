@@ -11,8 +11,8 @@
 (def white-green 5)
 (def white-white 7)
 
-;; First color is for player 1 (i.e. what player 2 sees and must have
-;; player 1 touch) and vice versa
+;; Color 1 is used on turn 1, i.e. when player 1 gives the hint and
+;; player 2 touches.
 (defn create-key []
   (concat (repeat black-black ["b" "b"])
           (repeat black-green ["b" "g"])
@@ -30,13 +30,76 @@
                             (db/list-words)
                           (db/list-words-from {:lists wordlists}))))
         key (create-key)]
-    (map #(assoc %1 :colors %2 :touched-by '()) words key)))
+    (shuffle (map #(assoc %1 :colors %2 :touched-by nil :superposition true)
+                  words key))))
 
 (defn hide-space [space player]
-  (if (some #{player} (:touched-by space))
-    space
-    (let [other-player-idx (- 2 player)]
-      (assoc-in space [:colors other-player-idx] "u"))))
+  (if (:superposition space)
+    (if (= player (:touched-by space))
+      space
+      (let [other-player-idx (- 2 player)]
+        (assoc-in space [:colors other-player-idx] "u")))
+    space))
 
 (defn hide-board [board player]
   (map #(hide-space % player) board))
+
+(defn touch-space [word-object player]
+  (let [colors (:colors word-object)
+        idx (- 2 player)
+        touched-by (cons player (:touched-by word-object))]
+    (cond
+      (= (nth colors idx) "b") nil ;;TODO: Game over
+      (= (nth colors idx) "g") (assoc word-object
+                                      :colors "g"
+                                      :superposition false
+                                      :touched-by touched-by)
+      (= (nth colors idx) "w") (if (empty? (:touched-by word-object))
+                                 (assoc word-object
+                                        :touched-by touched-by)
+                                 (assoc word-object
+                                        :colors "w"
+                                        :superposition false
+                                        :touched-by touched-by)))))
+
+(defn touch-space-in-board [board player word]
+  (map #(if (= word (:word %))
+          (touch-space % player) %) board))
+
+(defn check-for-victory [board]
+  (every? #(if (:superposition %)
+             (not (some #{"g"} (:colors %))) true) board))
+
+;; DB helpers
+
+(defn create-game [player1]
+  (db/create-game {:p1 player1
+                   :board (create-board)}))
+
+(defn init-game [id player2]
+  (db/init-game {:id id
+                 :p2 player2}))
+
+(defn get-game [id]
+  (db/get-game {:id id}))
+
+;; Game Info functions
+
+(defn player-number [game-info player-uuid]
+  (cond
+    (= player-uuid (:p1 game-info)) 1
+    (= player-uuid (:p2 game-info)) 2
+    :else 0))
+
+(defn hide-game-info [game-info player-uuid]
+  (let [board (:board game-info)
+        player (player-number game-info player-uuid)]
+    (when (not= player 0)
+      (assoc game-info :board (hide-board board player)))))
+
+(defn touch-space-in-game [game-info player-uuid word]
+  (let [board (:board game-info)
+        player (player-number game-info player-uuid)]
+    (when (not= player 0)
+      (assoc game-info :board (touch-space-in-board board player word)))))
+
