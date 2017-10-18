@@ -1,9 +1,16 @@
 (ns word-harder.db)
 
 (def default-db
-  {:hint nil
-   :hint-input {:text ""
+  {:game-id-input ""
+   :hint-input {:word ""
                 :count ""}
-   :board [{:word "apple"} {:word "banana"} {:word  "truck"}]
    :selected-word ""
-   :team ""})
+   :player-number nil
+   :game {:id nil
+          :over false
+          :winner nil
+          :turn nil
+          :hint nil
+          :p1 nil
+          :p2 nil
+          :board []}})

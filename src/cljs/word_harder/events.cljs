@@ -2,8 +2,7 @@
   (:require [re-frame.core :as re-frame]
             [word-harder.db :as db]
             [taoensso.timbre :as timbre]
-            [word-harder.ws :refer [chsk-send!]]
-            [secretary.core :as secretary]))
+            [word-harder.ws :refer [chsk-send!]]))
 
 (re-frame/reg-event-db
  :initialize-db
@@ -16,10 +15,9 @@
    (assoc db :active-panel active-panel)))
 
 (re-frame/reg-event-db
- :test/send
- (fn [db [_ msg]]
-   (chsk-send! [:test/send msg])
-   db))
+ :game-id-input-changed
+ (fn [db [_ v]]
+   (assoc db :game-id-input v)))
 
 (re-frame/reg-event-db
  :hint-input-changed
@@ -33,15 +31,28 @@
    (assoc db :selected-word v)))
 
 (re-frame/reg-event-db
- :game/new
+ :game/create
  (fn [db _]
-   (chsk-send! [:game/new] 5000
-               (fn [cb-reply]
-                 (when cb-reply
-                   (secretary/dispatch! "#/game"))))
-   db))
+   (chsk-send! [:game/create])
+   (assoc db :player-number 1)))
 
 (re-frame/reg-event-db
- :board
+ :game/join
+ (fn [db _]
+   (chsk-send! [:game/join (js/parseInt (:game-id-input db))])
+   (assoc db :player-number 2)))
+
+(re-frame/reg-event-db
+ :set-board
  (fn [db [_ v]]
-   (assoc db :board v)))
+   (assoc-in db [:game :board] v)))
+
+(re-frame/reg-event-db
+ :set-game-id
+ (fn [db [_ v]]
+   (assoc-in db [:game :id] v)))
+
+(re-frame/reg-event-db
+ :set-game-info
+ (fn [db [_ v]]
+   (assoc db :game v)))

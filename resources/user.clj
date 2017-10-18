@@ -5,17 +5,19 @@
 
 (hugsql/def-db-fns "sql/migrations.sql")
 
-(defn migrate []
-  (create-game-table db)
-  (create-word-table db)
-  ;;TODO: import from YAML
-  (let [word-list (yaml/parse-string (slurp "resources/dictionary.yml"))]
+(defn import-dictionary [filepath]
+  (let [word-list (yaml/parse-string (slurp filepath))]
     (doseq [sublist word-list]
-      (insert-words db
-                    {:words
+      (insert-words {:words
                      (map #(list % (name (first sublist)))
                           (last sublist))}))))
 
 (defn drop-all []
   (drop-game-table db)
   (drop-word-table db))
+
+(defn rebuild []
+  (drop-all)
+  (create-game-table db)
+  (create-word-table db)
+  (import-dictionary "resources/dictionary.yml"))

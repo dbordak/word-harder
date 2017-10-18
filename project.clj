@@ -36,7 +36,7 @@
                    ["pdo" ["figwheel" "dev"]]]
             "build" ["do" "clean"
                      ["cljsbuild" "once" "min"]]
-            "migrate" ["run" "-m" "user/migrate"]}
+            "rebuild-db" ["run" "-m" "user/rebuild"]}
 
   :profiles
   {:dev

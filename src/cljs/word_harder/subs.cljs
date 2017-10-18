@@ -8,19 +8,24 @@
    (:active-panel db)))
 
 (re-frame/reg-sub
+ :game-id-input
+ (fn [db _]
+   (:game-id-input db)))
+
+(re-frame/reg-sub
+ :game-id
+ (fn [db _]
+   (:id (:game db))))
+
+(re-frame/reg-sub
  :hint-input
  (fn [db]
    (:hint-input db)))
 
 (re-frame/reg-sub
- :count
- (fn [db]
-   (:count db)))
-
-(re-frame/reg-sub
  :hint
  (fn [db]
-   (:hint db)))
+   (:hint (:game db))))
 
 (re-frame/reg-sub
  :selected-word
@@ -30,4 +35,9 @@
 (re-frame/reg-sub
  :board
  (fn [db]
-   (:board db)))
+   (:board (:game db))))
+
+(re-frame/reg-sub
+ :player-number
+ (fn [db]
+   (:player-number db)))
