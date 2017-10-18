@@ -17,3 +17,12 @@
 
 (defn list-words-from [map]
   (distinct (-list-words-from db map)))
+
+(defn create-game [map]
+  ((keyword "scope_identity()") (-create-game db map)))
+
+(defn init-game [map]
+  (-init-game db map))
+
+(defn get-game [map]
+  (-get-game db map))
