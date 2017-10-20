@@ -85,13 +85,40 @@
 (defn word-button [space]
   (let [selected-word (re-frame/subscribe [:selected-word])
         player-number (re-frame/subscribe [:player-number])
-        word (:word space)]
+        hint (re-frame/subscribe [:hint])
+        other-player-number (- 3 player-number)
+        word (:word space)
+        turn (re-frame/subscribe [:turn])
+        your-turn? (or (= player-number @turn)
+                       (nil? @turn))]
     [re-com/button
      :label word
-     :class (str "button space"
+     :disabled? (or
+                 ;; your turn = you're giving hint
+                 your-turn?
+                 ;; collapsed = already resolved
+                 (not (:superposition space))
+                 ;; you already touched it
+                 (some #{@player-number} (:touched-by space))
+                 ;; hint not ready yet
+                 (nil? @hint))
+     :class (str "button space "
                        (if (= word @selected-word)
-                         " active" "")
-                       )
+                         "active" "")
+                       " "
+                       (cond
+                         (not (:superposition space)) (:colors space)
+                         your-turn? (nth (:colors space) (- @player-number 1))
+                         :default "u")
+                       " "
+                       (if (:superposition space)
+                         (str
+                          (if (some #{@player-number} (:touched-by space))
+                            "t-you" "")
+                          " "
+                          (if (some #{other-player-number} (:touched-by space))
+                            "t-them" ""))
+                         ""))
      :on-click #(re-frame/dispatch [:selected-word word])]))
 
 (defn game-board []
@@ -122,11 +149,23 @@
                    :label "Submit"
                    :on-click #(do (re-frame/dispatch [:hint-input-changed {:word "" :count ""}]))]]])))
 
+(defn action-row []
+  (let [turn (re-frame/subscribe [:turn])
+        player-number (re-frame/subscribe [:player-number])]
+    (cond
+      (nil? @turn) [re-com/button
+                    :label "Claim First Turn"
+                    :on-click #(re-frame/dispatch [:game/claim])]
+      (= @turn @player-number) [hint-input]
+      :default [re-com/button
+                :label "Touch"
+                :on-click #(re-frame/dispatch [:game/touch])])))
+
 (defn game-panel []
   [re-com/v-box
    :gap "1em"
    :align :center
-   :children [[top-bar] [game-board] [hint-input]]])
+   :children [[top-bar] [game-board] [action-row]]])
 
 
 ;; main

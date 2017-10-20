@@ -38,6 +38,11 @@
   (dispatch [:set-game-info msg])
   (dispatch [:set-active-panel :game-panel]))
 
+(defmethod push-msg-handler :game/update
+  [[_ {:as data :keys [msg]}]]
+  (timbre/debug "Game state updated")
+  (dispatch [:set-game-info msg]))
+
 (defmulti -event-msg-handler
   "Multimethod to handle Sente `event-msg`s"
   :id)

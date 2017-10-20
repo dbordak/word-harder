@@ -41,3 +41,8 @@
  :player-number
  (fn [db]
    (:player-number db)))
+
+(re-frame/reg-sub
+ :turn
+ (fn [db]
+   (:turn (:game db))))

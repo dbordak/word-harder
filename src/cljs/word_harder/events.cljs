@@ -43,6 +43,12 @@
    (assoc db :player-number 2)))
 
 (re-frame/reg-event-db
+ :game/claim
+ (fn [db _]
+   (chsk-send! [:game/claim])
+   db))
+
+(re-frame/reg-event-db
  :set-board
  (fn [db [_ v]]
    (assoc-in db [:game :board] v)))
