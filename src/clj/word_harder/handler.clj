@@ -1,5 +1,6 @@
 (ns word-harder.handler
   (:require [word-harder.game :as game]
+            [word-harder.db :as db]
             [compojure.core :refer [GET POST defroutes]]
             [compojure.route :refer [resources]]
             [ring.util.response :refer [resource-response content-type]]
@@ -39,6 +40,17 @@
     (when (not= old new)
       (infof "Connected uids change: %s" new))))
 
+(defn send-updated-game-state [game-id from]
+  (let [game-info (db/get-game game-id)]
+    (doseq [player [(:p1 game-info) (:p2 game-info)]]
+      (chsk-send! player
+                  [:game/update
+                   {:what-is-this "Game info object update"
+                    :how-often "Whenever game state is changed."
+                    :from from
+                    :to-whom player
+                    :msg (game/hide-game-info game-info player)}]))))
+
 ;; Receiving
 
 (defmulti -event-msg-handler
@@ -75,8 +87,8 @@
 (defmethod -event-msg-handler :game/join
   [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
   (debugf "Initializing game %d, second player %s joined." ?data uid)
-  (game/init-game ?data uid)
-  (let [game-info (game/get-game ?data)]
+  (db/init-game ?data uid)
+  (let [game-info (db/get-game ?data)]
     (doseq [player [(:p1 game-info) uid]]
       (chsk-send! player
                   [:game/start
@@ -86,6 +98,14 @@
                     :from nil
                     :to-whom player
                     :msg (game/hide-game-info game-info player)}]))))
+
+(defmethod -event-msg-handler :game/claim
+  [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
+  (let [game-info (db/get-game ?data)]
+    (when (nil? (:turn game-info))
+      (debugf "%s claimed first player." uid)
+      (game/set-turn game-info uid)
+      (send-updated-game-state ?data uid))))
 
 ;;;; Sente event router (our `event-msg-handler` loop)
 

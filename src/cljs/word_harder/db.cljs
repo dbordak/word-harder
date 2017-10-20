@@ -7,9 +7,10 @@
    :selected-word ""
    :player-number nil
    :game {:id nil
-          :over false
-          :winner nil
+          :won nil
           :turn nil
+          :hints 9
+          :fails 9
           :hint nil
           :p1 nil
           :p2 nil

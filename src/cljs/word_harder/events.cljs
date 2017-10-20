@@ -45,7 +45,7 @@
 (re-frame/reg-event-db
  :game/claim
  (fn [db _]
-   (chsk-send! [:game/claim])
+   (chsk-send! [:game/claim (:id (:game db))])
    db))
 
 (re-frame/reg-event-db

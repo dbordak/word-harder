@@ -49,12 +49,13 @@
         idx (- 2 player)
         touched-by (cons player (:touched-by word-object))]
     (cond
-      (= (nth colors idx) "b") nil ;;TODO: Game over
+      (= (nth colors idx) "b") word-object ;;TODO: Game over
       (= (nth colors idx) "g") (assoc word-object
                                       :colors "g"
                                       :superposition false
                                       :touched-by touched-by)
       (= (nth colors idx) "w") (if (empty? (:touched-by word-object))
+                                 ;;TODO: decrement fails
                                  (assoc word-object
                                         :touched-by touched-by)
                                  (assoc word-object
@@ -73,15 +74,7 @@
 ;; DB helpers
 
 (defn create-game [player1]
-  (db/create-game {:p1 player1
-                   :board (create-board)}))
-
-(defn init-game [id player2]
-  (db/init-game {:id id
-                 :p2 player2}))
-
-(defn get-game [id]
-  (db/get-game {:id id}))
+  (db/create-game player1 (create-board)))
 
 ;; Game Info functions
 
@@ -97,9 +90,17 @@
     (when (not= player 0)
       (assoc game-info :board (hide-board board player)))))
 
-(defn touch-space-in-game [game-info player-uuid word]
+(defn touch-space-in-game [game-info word]
   (let [board (:board game-info)
-        player (player-number game-info player-uuid)]
-    (when (not= player 0)
-      (assoc game-info :board (touch-space-in-board board player word)))))
+        player (- 3 (:turn game-info))]
+    (assoc game-info :board (touch-space-in-board board player word))))
 
+(defn set-turn [game-info player-uuid]
+  (let [player (player-number game-info player-uuid)]
+    (when (not= player 0)
+      (db/set-turn (:id game-info) player))))
+
+(defn set-winner [game-info player-uuid]
+  (let [player (player-number game-info player-uuid)]
+    (when (not= player 0)
+      (db/set-winner (:id game-info) player))))

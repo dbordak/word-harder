@@ -1,8 +1,9 @@
 -- :name create-game-table :!
 create table games (
   id          bigint auto_increment,
-  over        boolean not null default false,
-  winner      integer,
+  won         boolean,
+  hints       integer not null default 9,
+  fails       integer not null default 9,
   turn        integer,
   hint        other,
   p1          varchar(40),

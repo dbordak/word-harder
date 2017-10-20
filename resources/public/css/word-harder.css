@@ -17,9 +17,11 @@ button {
 	margin: 0;
 }
 
-.space {
+.space,
+.space:hover {
 	margin-left: 0.25em;
 	margin-right: 0.25em;
+	border: #68615e 1px solid;
 }
 
 .space.g {
@@ -33,7 +35,6 @@ button {
 .space.w {
 	background-color: #e6e2e0;
 	color: #1b1918;
-	border: #1b1918 1px solid;
 }
 /*
 Colors stolen from base16-atelier-forest
