@@ -5,7 +5,7 @@ create table games (
   hints       integer not null default 9,
   fails       integer not null default 9,
   turn        integer,
-  hint        other,
+  hint        varchar(50),
   p1          varchar(40),
   p2          varchar(40),
   board       other

@@ -14,4 +14,4 @@
           :hint nil
           :p1 nil
           :p2 nil
-          :board []}})
+          :board {}}})

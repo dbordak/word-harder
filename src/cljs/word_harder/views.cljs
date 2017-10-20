@@ -86,10 +86,10 @@
   (let [selected-word (re-frame/subscribe [:selected-word])
         player-number (re-frame/subscribe [:player-number])
         hint (re-frame/subscribe [:hint])
-        other-player-number (- 3 player-number)
-        word (:word space)
+        other-player-number (- 3 @player-number)
+        word (key space)
         turn (re-frame/subscribe [:turn])
-        your-turn? (or (= player-number @turn)
+        your-turn? (or (= @player-number @turn)
                        (nil? @turn))]
     [re-com/button
      :label word
@@ -97,9 +97,9 @@
                  ;; your turn = you're giving hint
                  your-turn?
                  ;; collapsed = already resolved
-                 (not (:superposition space))
+                 (not (:superposition (val space)))
                  ;; you already touched it
-                 (some #{@player-number} (:touched-by space))
+                 (some #{@player-number} (:touched-by (val space)))
                  ;; hint not ready yet
                  (nil? @hint))
      :class (str "button space "
@@ -107,16 +107,16 @@
                          "active" "")
                        " "
                        (cond
-                         (not (:superposition space)) (:colors space)
-                         your-turn? (nth (:colors space) (- @player-number 1))
-                         :default "u")
+                         (not (:superposition (val space))) (:colors (val space))
+                         your-turn? (nth (:colors (val space)) (- @player-number 1))
+                         :default (nth (:colors (val space)) (- 2 @player-number)))
                        " "
-                       (if (:superposition space)
+                       (if (:superposition (val space))
                          (str
-                          (if (some #{@player-number} (:touched-by space))
+                          (if (some #{@player-number} (:touched-by (val space)))
                             "t-you" "")
                           " "
-                          (if (some #{other-player-number} (:touched-by space))
+                          (if (some #{other-player-number} (:touched-by (val space)))
                             "t-them" ""))
                          ""))
      :on-click #(re-frame/dispatch [:selected-word word])]))
@@ -131,7 +131,8 @@
        :style {:flex-flow "row wrap"}])))
 
 (defn hint-input []
-  (let [new-hint (re-frame/subscribe [:hint-input])]
+  (let [new-hint (re-frame/subscribe [:hint-input])
+        hint (re-frame/subscribe [:hint])]
     (fn []
       [re-com/h-box
        :gap "0.5em"
@@ -142,12 +143,28 @@
                   [re-com/input-text
                    :placeholder "Count"
                    :model (:count @new-hint)
+                   :validation-regex #"^[0-9]*$"
                    :width "5em" ; number input, only need it to be as
                                 ; big as the placeholder text.
                    :on-change #(re-frame/dispatch [:hint-input-changed {:count %}])]
                   [re-com/button
                    :label "Submit"
-                   :on-click #(do (re-frame/dispatch [:hint-input-changed {:word "" :count ""}]))]]])))
+                   :disabled? (not (nil? @hint))
+                   :on-click #(do (re-frame/dispatch [:game/hint])
+                                  (re-frame/dispatch [:hint-input-changed {:word "" :count ""}]))]]])))
+
+(defn touch-buttons []
+  (let [hint (re-frame/subscribe [:hint])]
+    [re-com/h-box
+     :gap "0.5em"
+     :children [[re-com/button
+                 :label "Touch"
+                 :disabled? (nil? @hint)
+                 :on-click #(re-frame/dispatch [:game/touch])]
+                [re-com/button
+                 :label "Pass"
+                 :disabled? (nil? @hint)
+                 :on-click #(re-frame/dispatch [:game/pass])]]]))
 
 (defn action-row []
   (let [turn (re-frame/subscribe [:turn])
@@ -157,9 +174,7 @@
                     :label "Claim First Turn"
                     :on-click #(re-frame/dispatch [:game/claim])]
       (= @turn @player-number) [hint-input]
-      :default [re-com/button
-                :label "Touch"
-                :on-click #(re-frame/dispatch [:game/touch])])))
+      :default [touch-buttons])))
 
 (defn game-panel []
   [re-com/v-box

@@ -18,10 +18,15 @@ button {
 }
 
 .space,
-.space:hover {
+.space:hover,
+.space:focus {
 	margin-left: 0.25em;
 	margin-right: 0.25em;
 	border: #68615e 1px solid;
+}
+
+.space.u {
+	background-color: #6666ea;
 }
 
 .space.g {

@@ -101,11 +101,28 @@
 
 (defmethod -event-msg-handler :game/claim
   [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
+  (debugf "%s tried to claim first player in game %d" uid ?data)
   (let [game-info (db/get-game ?data)]
     (when (nil? (:turn game-info))
-      (debugf "%s claimed first player." uid)
       (game/set-turn game-info uid)
       (send-updated-game-state ?data uid))))
+
+(defmethod -event-msg-handler :game/hint
+  [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
+  (debugf "%s tried to set a hint." uid)
+  (let [game-info (db/get-game (:id ?data))]
+    (when (= (:turn game-info) (game/player-number game-info uid))
+      (db/set-hint (:id ?data) (:hint ?data))
+      (send-updated-game-state (:id ?data) uid))))
+
+(defmethod -event-msg-handler :game/touch
+  [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
+  (debugf "%s tried to touch %s" uid (:word ?data))
+  (let [game-info (db/get-game (:id ?data))]
+    (when (= (- 3 (:turn game-info)) (game/player-number game-info uid))
+      (db/update-board (:id ?data)
+                       (:board (game/touch-space-in-game! game-info (:word ?data))))
+      (send-updated-game-state (:id ?data) uid))))
 
 ;;;; Sente event router (our `event-msg-handler` loop)
 

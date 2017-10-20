@@ -39,7 +39,7 @@ where id = :id
 
 -- :name -decrement-hints :!
 update games
-set fails = hints - 1
+set hints = hints - 1
 where id = :id
 
 -- :name -decrement-fails :!

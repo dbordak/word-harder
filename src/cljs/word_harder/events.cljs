@@ -49,6 +49,25 @@
    db))
 
 (re-frame/reg-event-db
+ :game/hint
+ (fn [db _]
+   (chsk-send! [:game/hint
+                {:id (:id (:game db))
+                 :hint (let [hint (:hint-input db)]
+                         (str (:word hint)
+                              " "
+                              (:count hint)))}])
+   db))
+
+(re-frame/reg-event-db
+ :game/touch
+ (fn [db _]
+   (chsk-send! [:game/touch
+                {:id (:id (:game db))
+                 :word (:selected-word db)}])
+   (assoc db :selected-word "")))
+
+(re-frame/reg-event-db
  :set-board
  (fn [db [_ v]]
    (assoc-in db [:game :board] v)))
