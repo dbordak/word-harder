@@ -68,6 +68,12 @@
    (assoc db :selected-word "")))
 
 (re-frame/reg-event-db
+ :game/pass
+ (fn [db _]
+   (chsk-send! [:game/pass (:game db)])
+   (assoc db :selected-word "")))
+
+(re-frame/reg-event-db
  :set-board
  (fn [db [_ v]]
    (assoc-in db [:game :board] v)))

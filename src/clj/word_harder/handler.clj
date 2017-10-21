@@ -122,7 +122,21 @@
     (when (= (- 3 (:turn game-info)) (game/player-number game-info uid))
       (db/update-board (:id ?data)
                        (:board (game/touch-space-in-game! game-info (:word ?data))))
+      (let [post-data (db/get-game (:id ?data))]
+        (if (and (<= (:hints post-data) 0)
+                 (not (:won post-data)))
+          (db/game-over false)))
       (send-updated-game-state (:id ?data) uid))))
+
+(defmethod -event-msg-handler :game/pass
+  [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
+  (debugf "%s tried to pass" uid)
+  (let [game-info (db/get-game ?data)]
+    (when (= (- 3 (:turn game-info)) (game/player-number game-info uid))
+      (game/next-turn game-info)
+      (if (<= (:hints (db/get-game ?data)) 0)
+        (db/game-over false))
+      (send-updated-game-state ?data uid))))
 
 ;;;; Sente event router (our `event-msg-handler` loop)
 

@@ -60,24 +60,40 @@
 
 ;; Game
 
+(defn info-bar []
+  (fn []
+    (let [turns (re-frame/subscribe [:hints])
+          mistakes (re-frame/subscribe [:fails])]
+      [re-com/h-box
+       :justify :between
+       :width "100%"
+       :children [[re-com/title
+                   :label (str "Turns Remaining: " @turns)
+                   :level :level3]
+                  [re-com/title
+                   :label (str "Mistakes Remaining: " @mistakes)
+                   :level :level3]]])))
+
 (defn settings-modal []
   [re-com/md-icon-button
+   :style {:display "none"}
    :md-icon-name "zmdi-settings"])
 
 (defn hint-display []
   (let [hint (re-frame/subscribe [:hint])]
     (fn []
-      [re-com/label
+      [re-com/title
        :label (if @hint
                 @hint
                 "No hint to display.")
-       :class "btn btn-primary disabled"])))
+       :level :level2])))
 
 (defn help-modal []
   [re-com/md-icon-button
+   :style {:display "none"}
    :md-icon-name "zmdi-help"])
 
-(defn top-bar []
+(defn hint-bar []
   [re-com/h-box
    :gap "0.5em"
    :children [[settings-modal] [hint-display] [help-modal]]])
@@ -105,6 +121,10 @@
      :class (str "button space "
                        (if (= word @selected-word)
                          "active" "")
+                       " "
+                       (if (and your-turn?
+                                (not (:superposition (val space))))
+                         "collapsed" "")
                        " "
                        (cond
                          (not (:superposition (val space))) (:colors (val space))
@@ -176,12 +196,32 @@
       (= @turn @player-number) [hint-input]
       :default [touch-buttons])))
 
-(defn game-panel []
+(defn inner-game-panel []
   [re-com/v-box
    :gap "1em"
    :align :center
-   :children [[top-bar] [game-board] [action-row]]])
+   :children [[hint-bar] [game-board] [action-row] [info-bar]]])
 
+(defn game-over-overlay []
+  (let [won (re-frame/subscribe [:won])]
+    (fn []
+      (cond
+        (nil? @won) [:div ""]
+        (= true @won) [re-com/modal-panel
+                       :child [:div "Congratulon! You are super player!"]]
+        :default [:div {:id "you-died-container"}
+                  [:div {:id "you-died-overlay"}]
+                  [:div {:id "you-died"} [:div "YOU DIED"]]]))))
+
+(defn game-panel []
+  (let [won (re-frame/subscribe [:won])]
+    (fn []
+      [re-com/v-box
+       :height "100%"
+       :width "100%"
+       :align :center
+       :justify :center
+       :children [[inner-game-panel] [game-over-overlay]]])))
 
 ;; main
 

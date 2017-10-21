@@ -25,6 +25,18 @@ button {
 	border: #68615e 1px solid;
 }
 
+.space.collapsed.w::after,
+.space.t-them::after {
+	content: "∆";
+	margin-left: 1em;
+}
+
+.space.collapsed.w::before,
+.space.t-you::before {
+	content: "∇";
+	margin-right: 1em;
+}
+
 .space.u {
 	background-color: #6666ea;
 }
@@ -33,6 +45,7 @@ button {
 	background-color: #7b9726;
 }
 
+.space.collapsed.b,
 .space.b {
 	background-color: #1b1918;
 }
@@ -41,6 +54,42 @@ button {
 	background-color: #e6e2e0;
 	color: #1b1918;
 }
+
+.space.collapsed {
+	background-color: #e6e2e0;
+	border-color: white;
+}
+
+.space.collapsed.g {
+	color: #7b9726;
+}
+
+#you-died-container {
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 1020;
+	display: flex;
+}
+
+#you-died-overlay {
+	height: 100%;
+	width: 100%;
+	background: linear-gradient(rgba(0,0,0,0.7),rgba(0,0,0,0.95),rgba(0,0,0,0.7));
+	z-index: 1;
+	position: fixed;
+}
+
+#you-died {
+	color: red;
+	font-size: 60pt;
+	text-shadow: 0 0 10px black;
+	z-index: 2;
+	margin: auto;
+}
+
 /*
 Colors stolen from base16-atelier-forest
 #1b1918 #2c2421 #68615e #766e6b #9c9491 #a8a19f

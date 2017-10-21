@@ -102,7 +102,8 @@
   (db/create-game player1 (create-board)))
 
 (defn next-turn [game-info]
-  (if true
+  (if (not (check-for-completion (:board game-info)
+                                 (- 3 (:turn game-info))))
     (db/next-turn (:id game-info))
     (db/advance-turn (:id game-info))))
 

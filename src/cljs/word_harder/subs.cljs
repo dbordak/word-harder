@@ -46,3 +46,18 @@
  :turn
  (fn [db]
    (:turn (:game db))))
+
+(re-frame/reg-sub
+ :hints
+ (fn [db]
+   (:hints (:game db))))
+
+(re-frame/reg-sub
+ :fails
+ (fn [db]
+   (:fails (:game db))))
+
+(re-frame/reg-sub
+ :won
+ (fn [db]
+   (:won (:game db))))
