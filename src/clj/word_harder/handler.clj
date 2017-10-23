@@ -72,6 +72,10 @@
     (when ?reply-fn
       (?reply-fn {:umatched-event-as-echoed-from-from-server event}))))
 
+(defmethod -event-msg-handler :chsk/ws-ping
+  [{:as ev-msg :keys [event id ?data ring-req ?reply-fn send-fn]}]
+  nil)
+
 (defmethod -event-msg-handler :game/create
   [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
   (debugf "Creating new game; waiting for second player.")
@@ -123,9 +127,9 @@
       (db/update-board (:id ?data)
                        (:board (game/touch-space-in-game! game-info (:word ?data))))
       (let [post-data (db/get-game (:id ?data))]
-        (if (and (<= (:hints post-data) 0)
-                 (not (:won post-data)))
-          (db/game-over false)))
+        (when (and (<= (:hints post-data) 0)
+                   (not (:won post-data)))
+          (db/game-over (:id ?data) false)))
       (send-updated-game-state (:id ?data) uid))))
 
 (defmethod -event-msg-handler :game/pass
@@ -134,8 +138,8 @@
   (let [game-info (db/get-game ?data)]
     (when (= (- 3 (:turn game-info)) (game/player-number game-info uid))
       (game/next-turn game-info)
-      (if (<= (:hints (db/get-game ?data)) 0)
-        (db/game-over false))
+      (when (<= (:hints (db/get-game ?data)) 0)
+        (db/game-over ?data false))
       (send-updated-game-state ?data uid))))
 
 ;;;; Sente event router (our `event-msg-handler` loop)

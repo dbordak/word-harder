@@ -64,6 +64,12 @@ button {
 	color: #7b9726;
 }
 
+.space.bane {
+	border-width: 0.3em;
+	padding-top: 1px;
+	padding-bottom: 1px;
+}
+
 #you-died-container {
 	position: fixed;
 	left: 0;

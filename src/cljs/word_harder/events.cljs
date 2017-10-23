@@ -70,7 +70,7 @@
 (re-frame/reg-event-db
  :game/pass
  (fn [db _]
-   (chsk-send! [:game/pass (:game db)])
+   (chsk-send! [:game/pass (:id (:game db))])
    (assoc db :selected-word "")))
 
 (re-frame/reg-event-db
