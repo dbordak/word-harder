@@ -34,13 +34,13 @@
  :game/create
  (fn [db _]
    (chsk-send! [:game/create])
-   (assoc db :player-number 1)))
+   db))
 
 (re-frame/reg-event-db
  :game/join
  (fn [db _]
    (chsk-send! [:game/join (js/parseInt (:game-id-input db))])
-   (assoc db :player-number 2)))
+   db))
 
 (re-frame/reg-event-db
  :game/claim
@@ -87,3 +87,15 @@
  :set-game-info
  (fn [db [_ v]]
    (assoc db :game v)))
+
+(re-frame/reg-event-db
+ :set-uid
+ (fn [db [_ v]]
+   (assoc db :uid v)))
+
+(re-frame/reg-event-db
+ :set-player-number
+ (fn [db _]
+   (assoc db :player-number
+          (cond (= (:uid db) (:p1 (:game db))) 1
+                (= (:uid db) (:p2 (:game db))) 2))))

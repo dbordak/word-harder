@@ -23,9 +23,11 @@
    (-create-game db {:p1 player1
                      :board board})))
 
-(defn init-game [id player2]
-  (-init-game db {:id id
-                  :p2 player2}))
+(defn set-player [id player-number player]
+  (let [map {:id id :player player}]
+    (cond
+      (= player-number 1) (-set-player-1 db map)
+      (= player-number 2) (-set-player-2 db map))))
 
 (defn set-turn [id player]
   (-set-turn db {:id id
@@ -57,3 +59,6 @@
 
 (defn get-game [id]
   (-get-game db {:id id}))
+
+(defn get-games-by-player [player]
+  (-get-games-by-player db {:player player}))

@@ -6,6 +6,7 @@
                 :count ""}
    :selected-word ""
    :player-number nil
+   :uid nil
    :game {:id nil
           :won nil
           :turn nil

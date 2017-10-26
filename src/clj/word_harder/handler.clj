@@ -43,13 +43,14 @@
 (defn send-updated-game-state [game-id from]
   (let [game-info (db/get-game game-id)]
     (doseq [player [(:p1 game-info) (:p2 game-info)]]
-      (chsk-send! player
-                  [:game/update
-                   {:what-is-this "Game info object update"
-                    :how-often "Whenever game state is changed."
-                    :from from
-                    :to-whom player
-                    :msg (game/hide-game-info game-info player)}]))))
+      (when (not (nil? player))
+        (chsk-send! player
+                    [:game/update
+                     {:what-is-this "Game info object update"
+                      :how-often "Whenever game state is changed."
+                      :from from
+                      :to-whom player
+                      :msg (game/hide-game-info game-info player)}])))))
 
 ;; Receiving
 
@@ -76,12 +77,20 @@
   [{:as ev-msg :keys [event id ?data ring-req ?reply-fn send-fn]}]
   nil)
 
+(defmethod -event-msg-handler :chsk/uidport-close
+  [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
+  (debugf "%s disconnected; removing from active games" uid)
+  (doseq [game-info (db/get-games-by-player uid)]
+    (debugf "Removing %s from game %d" uid (:id game-info))
+    (db/set-player (:id game-info) (game/player-number game-info uid) nil)
+    (send-updated-game-state (:id game-info) nil)))
+
 (defmethod -event-msg-handler :game/create
   [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
   (debugf "Creating new game; waiting for second player.")
   (let [game-id (game/create-game uid)]
     (chsk-send! uid
-                [:game/create
+                [:game/waiting
                  {:what-is-this "New game created, awaiting second player."
                   :how-often "Whenever someone presses 'New Game'."
                   :to-whom uid
@@ -90,18 +99,34 @@
 
 (defmethod -event-msg-handler :game/join
   [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
-  (debugf "Initializing game %d, second player %s joined." ?data uid)
-  (db/init-game ?data uid)
-  (let [game-info (db/get-game ?data)]
-    (doseq [player [(:p1 game-info) uid]]
-      (chsk-send! player
-                  [:game/start
-                   {:what-is-this "New game initial data transfer"
-                    :how-often "Whenever a game is started and
-                      both players have joined."
-                    :from nil
-                    :to-whom player
-                    :msg (game/hide-game-info game-info player)}]))))
+  (debugf "Player %s attempting to join game %d" uid ?data)
+  (let [game-info (db/get-game ?data)
+        player-1 (:p1 game-info)
+        player-2 (:p2 game-info)]
+    (if (and (nil? player-1) (nil? player-2))
+      (do (db/set-player (:id game-info) 1 uid)
+          (chsk-send! uid
+                      [:game/waiting
+                       {:what-is-this "Frozen game rejoined, awaiting second player."
+                        :how-often "Whenever someone rejoins a game with no players."
+                        :to-whom uid
+                        :from nil
+                        :msg (:id game-info)}]))
+      ;; if there's already someone in this game:
+      (do (cond
+            (nil? player-1) (db/set-player (:id game-info) 1 uid)
+            (nil? player-2) (db/set-player (:id game-info) 2 uid))
+          (let [new-game-info (db/get-game ?data)]
+            (doseq [player [(:p1 new-game-info) (:p2 new-game-info)]]
+              (chsk-send! player
+                          [:game/start
+                           {:what-is-this "Initial data transfer."
+                            :how-often "Whenever a game is started and
+                            both players have joined, or a second player
+                            rejoins an in-progress game."
+                            :from nil
+                            :to-whom player
+                            :msg (game/hide-game-info new-game-info player)}])))))))
 
 (defmethod -event-msg-handler :game/claim
   [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]

@@ -14,9 +14,14 @@ select word from words where list in (:v*:lists)
 -- :name -create-game :i!
 insert into games (p1, board) values (:p1, :board)
 
--- :name -init-game :!
+-- :name -set-player-1 :!
 update games
-set p2 = :p2
+set p1 = :player
+where id = :id
+
+-- :name -set-player-2 :!
+update games
+set p2 = :player
 where id = :id
 
 -- :name -set-turn :!
@@ -64,3 +69,9 @@ where id = :id
 
 -- :name -get-game :? :1
 select * from games where id = :id
+
+-- :name -get-games-by-player
+select * from games
+where won is null
+and (p1 = :player
+or p2 = :player)

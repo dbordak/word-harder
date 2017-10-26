@@ -5,7 +5,7 @@
    [cljs.core.async :as async :refer (put! chan)]
    [taoensso.sente  :as sente :refer (cb-success?)]
    [taoensso.timbre :as timbre]
-   [re-frame.core :refer [dispatch]]
+   [re-frame.core :refer [dispatch dispatch-sync]]
    [secretary.core :as secretary]))
 
 (let [{:keys [chsk ch-recv send-fn state]}
@@ -26,17 +26,18 @@
   [[_ {:as data :keys [from msg]}]]
   (dispatch [:chat/recv-msg from msg]))
 
-(defmethod push-msg-handler :game/create
+(defmethod push-msg-handler :game/waiting
   [[_ {:as data :keys [msg]}]]
-  (timbre/debug "Game object created, awaiting player 2.")
+  (timbre/debug "Waiting for partner to join...")
   (dispatch [:set-game-id msg])
   (dispatch [:set-active-panel :lobby-panel]))
 
 (defmethod push-msg-handler :game/start
   [[_ {:as data :keys [msg]}]]
-  (timbre/debug "Player 2 joined, game starting")
-  (dispatch [:set-game-info msg])
-  (dispatch [:set-active-panel :game-panel]))
+  (timbre/debug "Partner joined, game starting")
+  (dispatch-sync [:set-game-info msg])
+  (dispatch [:set-active-panel :game-panel])
+  (dispatch [:set-player-number]))
 
 (defmethod push-msg-handler :game/update
   [[_ {:as data :keys [msg]}]]
@@ -71,7 +72,8 @@
 (defmethod -event-msg-handler :chsk/handshake
   [{:as ev-msg :keys [?data]}]
   (let [[?uid ?csrf-token ?handshake-data] ?data]
-    (timbre/debug "Handshake: " ?data)))
+    (timbre/debug "Handshake: " ?data)
+    (dispatch [:set-uid ?uid])))
 
 (defonce router_ (atom nil))
 (defn stop-router! [] (when-let [stop-f @router_] (stop-f)))
