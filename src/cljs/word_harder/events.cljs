@@ -43,7 +43,9 @@
    (chsk-send! [:game/create
                 {:tiles (reduce-kv (fn [m k v] (assoc m k (js/parseInt v)))
                                    {} (:tiles (:custom-game-form db)))
-                 :wordlists (into (vector) (:wordlists (:custom-game-form db)))}])
+                 :wordlists (into (vector) (:wordlists (:custom-game-form db)))
+                 :hints (js/parseInt (:hints (:custom-game-form db)))
+                 :mistakes (js/parseInt (:mistakes (:custom-game-form db)))}])
    db))
 
 (re-frame/reg-event-db
@@ -119,6 +121,16 @@
  :wordlist-input-changed
  (fn [db [_ v]]
    (assoc-in db [:custom-game-form :wordlists] v)))
+
+(re-frame/reg-event-db
+ :hints-input-changed
+ (fn [db [_ v]]
+   (assoc-in db [:custom-game-form :hints] v)))
+
+(re-frame/reg-event-db
+ :mistakes-input-changed
+ (fn [db [_ v]]
+   (assoc-in db [:custom-game-form :mistakes] v)))
 
 (re-frame/reg-event-db
  :game/get-wordlists

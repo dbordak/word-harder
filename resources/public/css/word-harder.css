@@ -6,14 +6,17 @@
 	display: flex;
 }
 
-#tile-form {
+#tile-form,
+#turns-form {
 	display: table;
 }
 
-.tile-form-row {
+.tile-form-row,
+.turns-form-row {
 	display: table-row;
 }
-.tile-form-row > * {
+.tile-form-row > *,
+.turns-form-row > *{
 	display: table-cell;
 	padding: 0 0.5em;
 }

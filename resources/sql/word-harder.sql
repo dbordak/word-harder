@@ -14,7 +14,8 @@ select distinct list from words
 
 
 -- :name -create-game :i!
-insert into games (p1, board) values (:p1, :board)
+insert into games (p1, board, hints, fails)
+values (:p1, :board, :hints, :mistakes)
 
 -- :name -set-player-1 :!
 update games

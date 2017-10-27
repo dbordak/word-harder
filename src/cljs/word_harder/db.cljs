@@ -4,13 +4,15 @@
   {;; UI and Inputs
    :game-id-input ""
    :wordlists []
-   :custom-game-form {:wordlists (set [])
-                      :tiles {:black "1"
+   :custom-game-form {:tiles {:black "1"
                               :white "7"
                               :green "3"
                               :black-green "1"
                               :black-white "1"
-                              :green-white "5"}}
+                              :green-white "5"}
+                      :wordlists (set [])
+                      :hints "9"
+                      :mistakes "9"}
    :hint-input {:word ""
                 :count ""}
    :selected-word ""

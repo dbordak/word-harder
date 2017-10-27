@@ -36,9 +36,6 @@
                   (* 2 (js/parseInt (:black-white tiles)))
                   (* 2 (js/parseInt (:green-white tiles))))]]])
 
-(defn wordlist-item [wordlist]
-  {:label wordlist :id wordlist})
-
 ;; Had to copy out these two functions from re-com since they're so
 ;; tightly bound to bootstrap.
 (defn- check-clicked
@@ -71,10 +68,31 @@
      :align :center
      :children [[:h3 "Wordlists"]
                 [re-com/selection-list
-                 :choices (map wordlist-item @wordlists)
+                 :choices (map #(hash-map :label %1 :id %1) @wordlists)
                  :model (:wordlists @form-data)
                  :item-renderer wordlist-checkbox-renderer
                  :on-change #(re-frame/dispatch [:wordlist-input-changed %])]]]))
+
+(defn turns-form []
+  (let [form-data (re-frame/subscribe [:custom-game-form])]
+    [re-com/v-box
+     :align :center
+     :children [[:h3 "Turns"]
+                [:div {:id "turns-form"}
+                 [:div {:class "turns-form-row"}
+                  [:span "Hints"]
+                  [re-com/input-text
+                   :width "4.5em"
+                   :validation-regex #"^[0-9]*$"
+                   :model (:hints @form-data)
+                   :on-change #(re-frame/dispatch [:hints-input-changed %])]]
+                 [:div {:class "turns-form-row"}
+                  [:span "Mistakes"]
+                  [re-com/input-text
+                   :width "4.5em"
+                   :validation-regex #"^[0-9]*$"
+                   :model (:mistakes @form-data)
+                   :on-change #(re-frame/dispatch [:mistakes-input-changed %])]]]]]))
 
 (defn custom-game-form []
   (let [form-data (re-frame/subscribe [:custom-game-form])]
@@ -87,7 +105,9 @@
                    :gap "1em"
                    :children [(tile-form (:tiles @form-data))
                               [re-com/line]
-                              (wordlist-form)]]
+                              [wordlist-form]
+                              [re-com/line]
+                              [turns-form]]]
                   [re-com/button
                    :label "Create Custom Game"
                    :on-click #(re-frame/dispatch [:game/create-custom])]]])))

@@ -18,10 +18,13 @@
 (defn list-word-categories []
   (map :list (-list-word-categories db)))
 
-(defn create-game [player1 board]
+(defn create-game [player1 board & {:keys [hints mistakes]
+                                    :or {hints 9 mistakes 9}} ]
   ((keyword "scope_identity()")
    (-create-game db {:p1 player1
-                     :board board})))
+                     :board board
+                     :hints hints
+                     :mistakes mistakes})))
 
 (defn set-player [id player-number player]
   (let [transaction-map {:id id :player player}]
