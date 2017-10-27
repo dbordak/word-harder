@@ -2,6 +2,7 @@
   (:require [re-frame.core :as re-frame]
             [word-harder.db :as db]
             [taoensso.timbre :as timbre]
+            [taoensso.sente :as sente]
             [word-harder.ws :refer [chsk-send!]]))
 
 (re-frame/reg-event-db
@@ -34,6 +35,15 @@
  :game/create
  (fn [db _]
    (chsk-send! [:game/create])
+   db))
+
+(re-frame/reg-event-db
+ :game/create-custom
+ (fn [db _]
+   (chsk-send! [:game/create
+                {:tiles (reduce-kv (fn [m k v] (assoc m k (js/parseInt v)))
+                                   {} (:tiles (:custom-game-form db)))
+                 :wordlists (into (vector) (:wordlists (:custom-game-form db)))}])
    db))
 
 (re-frame/reg-event-db
@@ -99,3 +109,27 @@
    (assoc db :player-number
           (cond (= (:uid db) (:p1 (:game db))) 1
                 (= (:uid db) (:p2 (:game db))) 2))))
+
+(re-frame/reg-event-db
+ :tile-input-changed
+ (fn [db [_ tile v]]
+   (assoc-in db [:custom-game-form :tiles tile] v)))
+
+(re-frame/reg-event-db
+ :wordlist-input-changed
+ (fn [db [_ v]]
+   (assoc-in db [:custom-game-form :wordlists] v)))
+
+(re-frame/reg-event-db
+ :game/get-wordlists
+ (fn [db _]
+   (chsk-send! [:game/get-wordlists] 5000
+               (fn [reply]
+                 (if (sente/cb-success? reply)
+                   (re-frame/dispatch [:set-wordlists reply]))))
+   db))
+
+(re-frame/reg-event-db
+ :set-wordlists
+ (fn [db [_ v]]
+   (assoc db :wordlists v)))

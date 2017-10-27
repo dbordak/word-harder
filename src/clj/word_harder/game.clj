@@ -3,21 +3,21 @@
 
 ;; Color 1 is used on turn 1, i.e. when player 1 gives the hint and
 ;; player 2 touches.
-(defn create-key [& {:keys [black black-green black-white green green-white white]
-                     :or {black 1
-                          black-green 1
-                          black-white 1
-                          green 3
-                          green-white 5
-                          white 7}}]
-  (apply concat
-         (concat
-          (repeat black '(["b" "b"]))
-          (repeat black-green '(["b" "g"] ["g" "b"]))
-          (repeat black-white '(["b" "w"] ["w" "b"]))
-          (repeat green '(["g" "g"]))
-          (repeat green-white '(["g" "w"] ["w" "g"]))
-          (repeat white '(["w" "w"])))))
+(defn create-key [& [color-map]]
+  (let [black (or (:black color-map) 1)
+        black-green (or (:black-green color-map) 1)
+        black-white (or (:black-white color-map) 1)
+        green (or (:green color-map) 3)
+        green-white (or (:green-white color-map) 5)
+        white (or (:white color-map) 7)]
+    (apply concat
+           (concat
+            (repeat black '(["b" "b"]))
+            (repeat black-green '(["b" "g"] ["g" "b"]))
+            (repeat black-white '(["b" "w"] ["w" "b"]))
+            (repeat green '(["g" "g"]))
+            (repeat green-white '(["g" "w"] ["w" "g"]))
+            (repeat white '(["w" "w"]))))))
 
 (defn create-board [& {:keys [wordlists key]
                        :or {key (create-key)}}]

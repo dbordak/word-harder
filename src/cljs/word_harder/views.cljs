@@ -1,46 +1,155 @@
 (ns word-harder.views
   (:require [re-frame.core :as re-frame]
-            [re-com.core :as re-com]))
+            [re-com.core :as re-com]
+            [reagent.core :as reagent]))
 
 
 ;; home
 
-(defn home-title []
-  [re-com/title
-   :label "Words 2: Word Harder"
-   :level :level1
-   :style {:margin-bottom "1em"}])
+(defn tile-form-row [name key tiles & [post-text]]
+  [:div {:class "tile-form-row"}
+   [:span name]
+   [re-com/input-text
+    :width "4.5em"
+    :validation-regex #"^[0-9]*$"
+    :model (key tiles)
+    :on-change #(re-frame/dispatch [:tile-input-changed key %])]
+   (if post-text
+     [:span post-text])])
 
-(defn new-game-button []
-  [re-com/button
-   :label "Start a New Game"
-   :on-click #(re-frame/dispatch [:game/create])])
+(defn tile-form [tiles]
+  [re-com/v-box
+   :align :center
+   :children [[:h3 "Tiles"]
+              [:div {:id "tile-form"}
+               (tile-form-row "Black" :black tiles)
+               (tile-form-row "White" :white tiles)
+               (tile-form-row "Green" :green tiles)
+               (tile-form-row "Black and Green" :black-green tiles "(per player)")
+               (tile-form-row "Black and White" :black-white tiles "(per player)")
+               (tile-form-row "Green and White" :green-white tiles "(per player)")]
+              [:span "Total tiles: "
+               (+ (js/parseInt (:black tiles))
+                  (js/parseInt (:white tiles))
+                  (js/parseInt (:green tiles))
+                  (* 2 (js/parseInt (:black-green tiles)))
+                  (* 2 (js/parseInt (:black-white tiles)))
+                  (* 2 (js/parseInt (:green-white tiles))))]]])
+
+(defn wordlist-item [wordlist]
+  {:label wordlist :id wordlist})
+
+;; Had to copy out these two functions from re-com since they're so
+;; tightly bound to bootstrap.
+(defn- check-clicked
+  [selections item-id ticked? required?]
+  (let [num-selected (count selections)
+        only-item    (when (= 1 num-selected) (first selections))]
+    (if (and required? (= only-item item-id))
+      selections  ;; prevent unselect of last item
+      (if ticked? (conj selections item-id) (disj selections item-id)))))
+
+(defn wordlist-checkbox-renderer
+  [item id-fn selections on-change disabled? label-fn required? as-exclusions?]
+  (let [item-id (id-fn item)]
+    [re-com/box
+     :class "list-group-item compact"
+     :attr {:on-click (re-com/handler-fn (when-not disabled?
+                                           (on-change (check-clicked selections item-id (not (selections item-id)) required?))))}
+     :child [re-com/checkbox
+             :model (some? (selections item-id))
+             :on-change #()
+             :disabled? disabled?
+             :label-class "checkable"
+             :label-style {:padding-left "1.5em"}
+             :label (label-fn item)]]))
+
+(defn wordlist-form []
+  (let [form-data (re-frame/subscribe [:custom-game-form])
+        wordlists (re-frame/subscribe [:wordlists])]
+    [re-com/v-box
+     :align :center
+     :children [[:h3 "Wordlists"]
+                [re-com/selection-list
+                 :choices (map wordlist-item @wordlists)
+                 :model (:wordlists @form-data)
+                 :item-renderer wordlist-checkbox-renderer
+                 :on-change #(re-frame/dispatch [:wordlist-input-changed %])]]]))
+
+(defn custom-game-form []
+  (let [form-data (re-frame/subscribe [:custom-game-form])]
+    (fn []
+      [re-com/v-box
+       :align :center
+       :gap "0.5em"
+       :children [[:h2 "Custom Game"]
+                  [re-com/h-box
+                   :gap "1em"
+                   :children [(tile-form (:tiles @form-data))
+                              [re-com/line]
+                              (wordlist-form)]]
+                  [re-com/button
+                   :label "Create Custom Game"
+                   :on-click #(re-frame/dispatch [:game/create-custom])]]])))
+
+(defn custom-game-modal []
+  (let [show? (reagent/atom false)]
+    (fn []
+      [re-com/v-box
+       :children [[re-com/button
+                   :label "Custom"
+                   :on-click #(do (re-frame/dispatch [:game/get-wordlists])
+                                  (reset! show? true))]
+                  (when @show?
+                    [re-com/modal-panel
+                     :backdrop-on-click #(reset! show? false)
+                     :child [custom-game-form]])]])))
+
+(defn new-game-box []
+  [re-com/v-box
+   :size "1"
+   :align :center
+   :children [[:h2 "New Game"]
+              [re-com/h-box
+               :gap "1em"
+               :children [[re-com/button
+                           :label "Standard"
+                           :on-click #(re-frame/dispatch [:game/create])]
+                          [custom-game-modal]]]]])
 
 (defn join-game-box []
   (let [game-id-input (re-frame/subscribe [:game-id-input])]
     (fn []
-      [:form {:id "game-id-form"}
-       [re-com/input-text
-        :placeholder "Game ID"
-        :width "6em"
-        :model @game-id-input
-        :on-change #(re-frame/dispatch [:game-id-input-changed %])]
-       [re-com/button
-        :label "Join a Game"
-        :on-click #(do (re-frame/dispatch [:game/join])
-                       (.preventDefault %))]])))
+      [re-com/v-box
+       :size "1"
+       :align :center
+       :children [[:h2 "Join Game"]
+                  [:form {:id "game-id-form"}
+                   [re-com/input-text
+                    :placeholder "Game ID"
+                    :width "6em"
+                    :model @game-id-input
+                    :on-change #(re-frame/dispatch [:game-id-input-changed %])]
+                   [re-com/button
+                    :label "Join"
+                    :style {:margin-left "1em"}
+                    :on-click #(do (re-frame/dispatch [:game/join])
+                                   (.preventDefault %))]]]])))
 
 (defn home-panel []
   [re-com/v-box
    :gap "1em"
    :align :center
-   :children [[home-title]
-              [new-game-button]
-              [re-com/title
-               :label "- or -"
-               :level :level4
-               :style {:margin "0"}]
-              [join-game-box]]])
+   :width "30em"
+   :children [[:h1 "Words 2: Word Harder"]
+              [re-com/h-box
+               :width "100%"
+               :gap "1em"
+               :children [[new-game-box]
+                          ;; [re-com/line
+                          ;;  :size "0.1em"
+                          ;;  :color "#68615e"]
+                          [join-game-box]]]]])
 
 
 ;; Lobby
@@ -125,10 +234,11 @@
               (if (and your-turn?
                        (not (:superposition (val space))))
                 "collapsed")
-              (cond
-                (not (:superposition (val space))) (:colors (val space))
-                your-turn? (nth (:colors (val space)) (- @player-number 1))
-                :default (nth (:colors (val space)) (- 2 @player-number)))
+              (if (not (:superposition (val space)))
+                (:colors (val space))
+                (nth (:colors (val space)) (- (if your-turn?
+                                                @player-number
+                                                other-player-number) 1)))
               (if (or (:superposition (val space))
                       (= "w" (:colors (val space))))
                 (clojure.string/join
@@ -168,7 +278,8 @@
                    :label "Submit"
                    :disabled? (not (nil? @hint))
                    :on-click #(do (re-frame/dispatch [:game/hint])
-                                  (re-frame/dispatch [:hint-input-changed {:word "" :count ""}]))]]])))
+                                  (re-frame/dispatch [:hint-input-changed
+                                                      {:word "" :count ""}]))]]])))
 
 (defn touch-buttons []
   (let [hint (re-frame/subscribe [:hint])]

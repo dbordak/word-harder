@@ -61,3 +61,13 @@
  :won
  (fn [db]
    (:won (:game db))))
+
+(re-frame/reg-sub
+ :custom-game-form
+ (fn [db]
+   (:custom-game-form db)))
+
+(re-frame/reg-sub
+ :wordlists
+ (fn [db]
+   (:wordlists db)))

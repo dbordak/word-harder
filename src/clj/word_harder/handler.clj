@@ -85,10 +85,19 @@
     (db/set-player (:id game-info) (game/player-number game-info uid) nil)
     (send-updated-game-state (:id game-info) nil)))
 
+(defmethod -event-msg-handler :game/get-wordlists
+  [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
+  (debugf "Client requested wordlists.")
+  (?reply-fn (db/list-word-categories)))
+
 (defmethod -event-msg-handler :game/create
   [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
   (debugf "Creating new game; waiting for second player.")
-  (let [game-id (db/create-game uid (game/create-board))]
+  (let [game-id (db/create-game
+                 uid (if ?data
+                       (game/create-board :wordlists (:wordlists ?data)
+                                          :key (game/create-key (:tiles ?data)))
+                       (game/create-board)))]
     (chsk-send! uid
                 [:game/waiting
                  {:what-is-this "New game created, awaiting second player."

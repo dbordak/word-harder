@@ -4,13 +4,33 @@
 
 #game-id-form {
 	display: flex;
-	justify-content: space-between;
+}
+
+#tile-form {
+	display: table;
+}
+
+.tile-form-row {
+	display: table-row;
+}
+.tile-form-row > * {
+	display: table-cell;
+	padding: 0 0.5em;
 }
 
 body {
 	background-color: #f1efee;
 	box-sizing: border-box;
+	font-family: Roboto, sans-serif;
 }
+
+h1, h2, h3 {
+	font-weight: 200;
+	padding-top: 0;
+}
+
+h1 {font-size: 40px;}
+h2 {font-size: 26px;}
 
 button {
 	background-color: #6666ea;
