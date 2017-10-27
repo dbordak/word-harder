@@ -6,17 +6,14 @@
 
 (hugsql/def-db-fns "sql/word-harder.sql")
 
-(defn insert-word [word]
-  (-insert-word db {:word word}))
-
 (defn insert-words [words]
   (-insert-words db {:words words}))
 
-(defn list-words []
-  (map :word (-list-words db)))
-
-(defn list-words-from [lists]
-  (map :word (-list-words-from db {:lists lists})))
+(defn list-words [& [wordlists]]
+  (map :word
+       (if (nil? wordlists)
+         (-list-words db)
+         (-list-words-from db {:lists wordlists}))))
 
 (defn list-word-categories []
   (map :list (-list-word-categories db)))

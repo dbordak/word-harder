@@ -19,17 +19,11 @@
           (repeat green-white '(["g" "w"] ["w" "g"]))
           (repeat white '(["w" "w"])))))
 
-(defn create-board [& [wordlists]]
-  (let [key (create-key)
-        words (take (count key)
-                    (shuffle
-                     (if (nil? wordlists)
-                       (db/list-words)
-                       (db/list-words-from wordlists))))]
-    (into (sorted-map)
-          (zipmap
-           words
-           (map #(hash-map :colors % :touched-by nil :superposition true) key)))))
+(defn create-board [& {:keys [wordlists key]
+                       :or {key (create-key)}}]
+  (zipmap (take (count key)
+                (shuffle (db/list-words wordlists)))
+          (map #(hash-map :colors % :touched-by nil :superposition true) key)))
 
 ;; i have no idea why i need the = true check.
 ;; look at this:
@@ -88,9 +82,6 @@
              (not= "g" (nth (:colors (val %)) (- player 1))) true) board))
 
 ;; DB helpers
-
-(defn create-game [player1]
-  (db/create-game player1 (create-board)))
 
 (defn next-turn [game-info]
   (if (not (check-for-completion (:board game-info)

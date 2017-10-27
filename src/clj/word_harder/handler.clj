@@ -88,7 +88,7 @@
 (defmethod -event-msg-handler :game/create
   [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
   (debugf "Creating new game; waiting for second player.")
-  (let [game-id (game/create-game uid)]
+  (let [game-id (db/create-game uid (game/create-board))]
     (chsk-send! uid
                 [:game/waiting
                  {:what-is-this "New game created, awaiting second player."
