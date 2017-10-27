@@ -118,27 +118,24 @@
                  (some #{@player-number} (:touched-by (val space)))
                  ;; hint not ready yet
                  (nil? @hint))
-     :class (str "button space "
-                       (if (= word @selected-word)
-                         "active" "")
-                       " "
-                       (if (and your-turn?
-                                (not (:superposition (val space))))
-                         "collapsed" "")
-                       " "
-                       (cond
-                         (not (:superposition (val space))) (:colors (val space))
-                         your-turn? (nth (:colors (val space)) (- @player-number 1))
-                         :default (nth (:colors (val space)) (- 2 @player-number)))
-                       " "
-                       (if (:superposition (val space))
-                         (str
-                          (if (some #{@player-number} (:touched-by (val space)))
-                            "t-you" "")
-                          " "
-                          (if (some #{other-player-number} (:touched-by (val space)))
-                            "t-them" ""))
-                         ""))
+     :class (clojure.string/join
+             " "
+             ["space"
+              (if (= word @selected-word) "active")
+              (if (and your-turn?
+                       (not (:superposition (val space))))
+                "collapsed")
+              (cond
+                (not (:superposition (val space))) (:colors (val space))
+                your-turn? (nth (:colors (val space)) (- @player-number 1))
+                :default (nth (:colors (val space)) (- 2 @player-number)))
+              (if (or (:superposition (val space))
+                      (= "w" (:colors (val space))))
+                (clojure.string/join
+                 " " (map #(cond
+                             (= @player-number %) "t-you"
+                             (= other-player-number %) "t-them")
+                          (:touched-by (val space)))))])
      :on-click #(re-frame/dispatch [:selected-word word])]))
 
 (defn game-board []

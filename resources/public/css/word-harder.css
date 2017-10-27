@@ -20,18 +20,15 @@ button {
 .space,
 .space:hover,
 .space:focus {
-	margin-left: 0.25em;
-	margin-right: 0.25em;
+	margin: 0.3em;
 	border: #68615e 1px solid;
 }
 
-.space.collapsed.w::after,
 .space.t-them::after {
 	content: "∆";
 	margin-left: 1em;
 }
 
-.space.collapsed.w::before,
 .space.t-you::before {
 	content: "∇";
 	margin-right: 1em;
