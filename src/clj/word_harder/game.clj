@@ -1,38 +1,34 @@
 (ns word-harder.game
   (:require [word-harder.db :as db]))
 
-(def black-black 1)
-(def black-green 1)
-(def green-black 1)
-(def black-white 1)
-(def white-black 1)
-(def green-green 3)
-(def green-white 5)
-(def white-green 5)
-(def white-white 7)
-
 ;; Color 1 is used on turn 1, i.e. when player 1 gives the hint and
 ;; player 2 touches.
-(defn create-key []
-  (concat (repeat black-black ["b" "b"])
-          (repeat black-green ["b" "g"])
-          (repeat green-black ["g" "b"])
-          (repeat black-white ["b" "w"])
-          (repeat white-black ["w" "b"])
-          (repeat green-green ["g" "g"])
-          (repeat green-white ["g" "w"])
-          (repeat white-green ["w" "g"])
-          (repeat white-white ["w" "w"])))
+(defn create-key [& {:keys [black black-green black-white green green-white white]
+                     :or {black 1
+                          black-green 1
+                          black-white 1
+                          green 3
+                          green-white 5
+                          white 7}}]
+  (apply concat
+         (concat
+          (repeat black '(["b" "b"]))
+          (repeat black-green '(["b" "g"] ["g" "b"]))
+          (repeat black-white '(["b" "w"] ["w" "b"]))
+          (repeat green '(["g" "g"]))
+          (repeat green-white '(["g" "w"] ["w" "g"]))
+          (repeat white '(["w" "w"])))))
 
 (defn create-board [& [wordlists]]
-  (let [words (take 25 (shuffle
-                        (if (nil? wordlists)
-                            (db/list-words)
-                          (db/list-words-from {:lists wordlists}))))
-        key (create-key)]
+  (let [key (create-key)
+        words (take (count key)
+                    (shuffle
+                     (if (nil? wordlists)
+                       (db/list-words)
+                       (db/list-words-from wordlists))))]
     (into (sorted-map)
           (zipmap
-           (map :word words)
+           words
            (map #(hash-map :colors % :touched-by nil :superposition true) key)))))
 
 ;; i have no idea why i need the = true check.
@@ -75,18 +71,13 @@
   (let [new-space (assoc space :touched-by
                          (cons player (:touched-by space)))
         color (touched-color space player)]
-    (cond
-      (= color "b") (assoc new-space
-                           :colors "b"
-                           :superposition false)
-      (= color "g") (assoc new-space
-                           :colors "g"
-                           :superposition false)
-      (= color "w") (if (empty? (:touched-by space))
-                      new-space
-                      (assoc new-space
-                             :colors "w"
-                             :superposition false)))))
+    ;; Touching a previously-untouched white space is the only case
+    ;; which does not collapse superposition.
+    (if (and (= color "w") (empty? (:touched-by space)))
+      new-space
+      (assoc new-space
+             :colors color
+             :superposition false))))
 
 (defn check-for-victory [board]
   (every? #(if (= true (:superposition (val %)))

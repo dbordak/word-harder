@@ -8,9 +8,8 @@
 (defn import-dictionary [filepath]
   (let [word-list (yaml/parse-string (slurp filepath))]
     (doseq [sublist word-list]
-      (insert-words {:words
-                     (map #(list % (name (first sublist)))
-                          (last sublist))}))))
+      (insert-words (map #(list % (name (first sublist)))
+                         (last sublist))))))
 
 (defn drop-all []
   (drop-game-table db)

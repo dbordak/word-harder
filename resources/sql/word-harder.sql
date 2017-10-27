@@ -6,10 +6,13 @@ insert into words (word, list)
 values :tuple*:words
 
 -- :name -list-words :*
-select word from words
+select distinct word from words
 
 -- :name -list-words-from :*
-select word from words where list in (:v*:lists)
+select distinct word from words where list in (:v*:lists)
+
+-- :name -list-word-categories :*
+select distinct list from words
 
 -- :name -create-game :i!
 insert into games (p1, board) values (:p1, :board)

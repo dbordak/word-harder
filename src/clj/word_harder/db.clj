@@ -6,17 +6,20 @@
 
 (hugsql/def-db-fns "sql/word-harder.sql")
 
-(defn insert-word [map]
-  (-insert-word db map))
+(defn insert-word [word]
+  (-insert-word db {:word word}))
 
-(defn insert-words [map]
-  (-insert-words db map))
+(defn insert-words [words]
+  (-insert-words db {:words words}))
 
 (defn list-words []
-  (distinct (-list-words db)))
+  (map :word (-list-words db)))
 
-(defn list-words-from [map]
-  (distinct (-list-words-from db map)))
+(defn list-words-from [lists]
+  (map :word (-list-words-from db {:lists lists})))
+
+(defn list-word-categories []
+  (map :list (-list-word-categories db)))
 
 (defn create-game [player1 board]
   ((keyword "scope_identity()")
@@ -24,10 +27,10 @@
                      :board board})))
 
 (defn set-player [id player-number player]
-  (let [map {:id id :player player}]
+  (let [transaction-map {:id id :player player}]
     (cond
-      (= player-number 1) (-set-player-1 db map)
-      (= player-number 2) (-set-player-2 db map))))
+      (= player-number 1) (-set-player-1 db transaction-map)
+      (= player-number 2) (-set-player-2 db transaction-map))))
 
 (defn set-turn [id player]
   (-set-turn db {:id id
