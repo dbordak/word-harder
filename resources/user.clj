@@ -15,8 +15,7 @@
   (drop-game-table db)
   (drop-word-table db))
 
-(defn rebuild []
-  (drop-all)
+(defn build-default-db []
   (create-game-table db)
   (create-word-table db)
   (import-dictionary "resources/dictionary.yml"))

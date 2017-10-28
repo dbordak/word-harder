@@ -1,6 +1,6 @@
 -- :name create-game-table :!
 create table games (
-  id          bigint auto_increment,
+  id          serial primary key,
   won         boolean,
   hints       integer not null default 9,
   fails       integer not null default 9,
@@ -8,7 +8,7 @@ create table games (
   hint        varchar(50),
   p1          varchar(40),
   p2          varchar(40),
-  board       other
+  board       bytea
 )
 
 -- :name drop-game-table :!

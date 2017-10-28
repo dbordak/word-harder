@@ -14,8 +14,9 @@
                  [com.taoensso/encore "2.91.1"]
                  [com.taoensso/sente "1.11.0"]
                  [com.taoensso/timbre "4.10.0"]
+                 [com.taoensso/nippy "2.13.0"]
                  [com.layerware/hugsql "0.4.7"]
-                 [com.h2database/h2 "1.4.196"]
+                 [org.postgresql/postgresql "42.1.4"]
                  [com.andrewmcveigh/cljs-time "0.5.0"]
                  [clj-yaml "0.4.0"]]
 
@@ -36,7 +37,8 @@
                    ["pdo" ["figwheel" "dev"]]]
             "build" ["do" "clean"
                      ["cljsbuild" "once" "min"]]
-            "rebuild-db" ["run" "-m" "user/rebuild"]}
+            "build-db" ["run" "-m" "user/build-default-db"]
+            "wipe-db" ["run" "-m" "user/drop-all"]}
 
   :profiles
   {:dev

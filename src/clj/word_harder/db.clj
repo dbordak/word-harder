@@ -1,8 +1,11 @@
 (ns word-harder.db
-  (:require [hugsql.core :as hugsql]))
+  (:require [hugsql.core :as hugsql]
+            [config.core :refer [env]]
+            [taoensso.nippy :as nippy]))
 
-(def db {:subprotocol "h2"
-         :subname "./word-harder.h2"})
+(def db (or (env :database-url)
+            {:subprotocol "postgresql"
+             :subname "word-harder"}))
 
 (hugsql/def-db-fns "sql/word-harder.sql")
 
@@ -11,7 +14,7 @@
 
 (defn list-words [& [wordlists]]
   (map :word
-       (if (nil? wordlists)
+       (if (or (nil? wordlists) (empty? wordlists))
          (-list-words db)
          (-list-words-from db {:lists wordlists}))))
 
@@ -20,11 +23,10 @@
 
 (defn create-game [player1 board & {:keys [hints mistakes]
                                     :or {hints 9 mistakes 9}} ]
-  ((keyword "scope_identity()")
-   (-create-game db {:p1 player1
-                     :board board
-                     :hints hints
-                     :mistakes mistakes})))
+  (:id (-create-game db {:p1 player1
+                         :board (nippy/freeze board)
+                         :hints hints
+                         :mistakes mistakes})))
 
 (defn set-player [id player-number player]
   (let [transaction-map {:id id :player player}]
@@ -54,14 +56,16 @@
 
 (defn update-board [id board]
   (-update-board db {:id id
-                     :board board}))
+                     :board (nippy/freeze board)}))
 
 (defn game-over [id won?]
   (-game-over db {:id id
                   :won won?}))
 
 (defn get-game [id]
-  (-get-game db {:id id}))
+  (let [game-info (-get-game db {:id id})]
+    (assoc game-info :board (nippy/thaw (:board game-info)))))
 
 (defn get-games-by-player [player]
-  (-get-games-by-player db {:player player}))
+  (let [game-info (-get-games-by-player db {:player player})]
+    (assoc game-info :board (nippy/thaw (:board game-info)))))
