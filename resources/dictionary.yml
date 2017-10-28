@@ -1,0 +1,74 @@
+locations:
+  - Egypt
+  - England
+  - Japan
+  - Switzerland
+  - Canary Islands
+  - Italy
+  - India
+  - Pakistan
+  - Singapore
+  - Rome
+  - London
+  - Moscow
+  - New York
+
+animals:
+  - frog
+  - gorilla
+  - orangutan
+  - donkey
+  - dog
+  - cat
+  - cow
+  - chicken
+  - bonobo chimpanzee
+  - fox
+  - snake
+  - boar
+  - pig
+  - cassowary
+  - puppy
+
+food:
+  - roast beef
+  - bread
+  - sandwich
+  - lettuce
+  - ketchup
+  - mustard
+
+body:
+  - head
+  - hands
+  - hair
+  - leg
+  - ear
+  - arms
+  - toe
+
+astral:
+  - Earth
+  - sun
+  - star
+  - moon
+  - Mars
+  - Titan
+
+memes:
+  - nut
+  - shack
+  - trolley
+  - boy
+  - coconut
+  - gun
+  - space
+  - jam
+  - basketball
+  - wrestler
+  - villain
+  - princess
+  - spaghetti
+  - snow
+  - Christmas
+  - slide
