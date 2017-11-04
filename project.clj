@@ -18,6 +18,7 @@
                  [com.layerware/hugsql "0.4.7"]
                  [org.postgresql/postgresql "42.1.4"]
                  [com.andrewmcveigh/cljs-time "0.5.0"]
+                 [re-frame-readfile-fx "1.0.0-beta"]
                  [clj-yaml "0.4.0"]]
 
   :plugins [[lein-cljsbuild "1.1.7"]]

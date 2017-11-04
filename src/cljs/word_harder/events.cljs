@@ -3,7 +3,8 @@
             [word-harder.db :as db]
             [taoensso.timbre :as timbre]
             [taoensso.sente :as sente]
-            [word-harder.ws :refer [chsk-send!]]))
+            [word-harder.ws :refer [chsk-send!]]
+            [re-frame-readfile-fx.core]))
 
 (re-frame/reg-event-db
  :initialize-db
@@ -40,12 +41,14 @@
 (re-frame/reg-event-db
  :game/create-custom
  (fn [db _]
-   (chsk-send! [:game/create
-                {:tiles (reduce-kv (fn [m k v] (assoc m k (js/parseInt v)))
-                                   {} (:tiles (:custom-game-form db)))
-                 :wordlists (into (vector) (:wordlists (:custom-game-form db)))
-                 :hints (js/parseInt (:hints (:custom-game-form db)))
-                 :mistakes (js/parseInt (:mistakes (:custom-game-form db)))}])
+   (let [form-data (:custom-game-form db)]
+     (chsk-send! [:game/create
+                  {:tiles (reduce-kv (fn [m k v] (assoc m k (js/parseInt v)))
+                                     {} (:tiles form-data))
+                   :wordlists (into (vector) (:wordlists form-data))
+                   :custom-wordlist (:wordlist-file form-data)
+                   :hints (js/parseInt (:hints form-data))
+                   :mistakes (js/parseInt (:mistakes form-data))}]))
    db))
 
 (re-frame/reg-event-db
@@ -145,3 +148,15 @@
  :set-wordlists
  (fn [db [_ v]]
    (assoc db :wordlists v)))
+
+(re-frame/reg-event-fx
+ :parse-wordlist-file
+ (fn [_ [_ v]]
+   {:readfile {:files v
+               :on-success [:set-wordlist-file]}}))
+
+(re-frame/reg-event-db
+ :set-wordlist-file
+ (fn [db [_ v]]
+   (assoc-in db [:custom-game-form :wordlist-file]
+             (clojure.string/split-lines (first v)))))

@@ -19,10 +19,12 @@
             (repeat green-white '(["g" "w"] ["w" "g"]))
             (repeat white '(["w" "w"]))))))
 
-(defn create-board [& {:keys [wordlists key]
+(defn create-board [& {:keys [wordlists key custom-wordlist]
                        :or {key (create-key)}}]
   (zipmap (take (count key)
-                (shuffle (db/list-words wordlists)))
+                (shuffle (if custom-wordlist
+                           (distinct custom-wordlist)
+                           (db/list-words wordlists))))
           (map #(hash-map :colors % :touched-by nil :superposition true) key)))
 
 ;; i have no idea why i need the = true check.

@@ -99,6 +99,7 @@
           (db/create-game
            uid
            (game/create-board :wordlists (:wordlists ?data)
+                              :custom-wordlist (:custom-wordlist ?data)
                               :key (game/create-key (:tiles ?data)))
            :hints (:hints ?data)
            :mistakes (:mistakes ?data))

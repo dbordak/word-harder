@@ -11,6 +11,7 @@
                               :black-white "1"
                               :green-white "5"}
                       :wordlists (set [])
+                      :wordlist-file nil
                       :hints "9"
                       :mistakes "9"}
    :hint-input {:word ""

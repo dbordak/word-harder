@@ -71,7 +71,15 @@
                  :choices (map #(hash-map :label %1 :id %1) @wordlists)
                  :model (:wordlists @form-data)
                  :item-renderer wordlist-checkbox-renderer
-                 :on-change #(re-frame/dispatch [:wordlist-input-changed %])]]]))
+                 :on-change #(re-frame/dispatch [:wordlist-input-changed %])]
+                [re-com/title
+                 :label "- or -"
+                 :level :level4
+                 :style {:margin "1em 0"}]
+                [:input {:type "file"
+                         :on-change #(re-frame/dispatch
+                                      [:parse-wordlist-file
+                                       (-> % .-target .-files (aget 0) list)])}]]]))
 
 (defn turns-form []
   (let [form-data (re-frame/subscribe [:custom-game-form])]
