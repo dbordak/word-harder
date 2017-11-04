@@ -1,0 +1,9 @@
+#+TITLE: Words 2: Word Harder
+
+=word-harder= is an implementation of [[https://boardgamegeek.com/boardgame/224037/codenames-duet][Codenames Duet]] by Vlaada
+Chvatil.
+
+[[./screenshots/title_screen.png]]
+
+
+[[./screenshots/game_in_progress.png]]
