@@ -156,6 +156,11 @@
                     :on-click #(do (re-frame/dispatch [:game/join])
                                    (.preventDefault %))]]]])))
 
+(defn repo-link []
+  [re-com/hyperlink-href
+   :label "Github"
+   :href "https://www.github.com/dbordak/word-harder"])
+
 (defn home-panel []
   [re-com/v-box
    :gap "1em"
@@ -166,10 +171,8 @@
                :width "100%"
                :gap "1em"
                :children [[new-game-box]
-                          ;; [re-com/line
-                          ;;  :size "0.1em"
-                          ;;  :color "#68615e"]
-                          [join-game-box]]]]])
+                          [join-game-box]]]
+              [repo-link]]])
 
 
 ;; Lobby
