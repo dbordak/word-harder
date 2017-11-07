@@ -203,12 +203,16 @@
 (defn info-bar []
   (fn []
     (let [turns (re-frame/subscribe [:hints])
-          mistakes (re-frame/subscribe [:fails])]
+          mistakes (re-frame/subscribe [:fails])
+          game-id (re-frame/subscribe [:game-id])]
       [re-com/h-box
        :justify :between
        :width "100%"
        :children [[re-com/title
                    :label (str "Turns Remaining: " @turns)
+                   :level :level3]
+                  [re-com/title
+                   :label (str "Game ID: " @game-id)
                    :level :level3]
                   [re-com/title
                    :label (str "Mistakes Remaining: " @mistakes)
