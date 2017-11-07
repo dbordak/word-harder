@@ -14,7 +14,7 @@
                  [com.taoensso/encore "2.91.1"]
                  [com.taoensso/sente "1.11.0"]
                  [com.taoensso/timbre "4.10.0"]
-                 [com.taoensso/nippy "2.13.0"]
+                 [com.taoensso/carmine "2.16.0"]
                  [com.layerware/hugsql "0.4.7"]
                  [org.postgresql/postgresql "42.1.4"]
                  [com.andrewmcveigh/cljs-time "0.5.0"]

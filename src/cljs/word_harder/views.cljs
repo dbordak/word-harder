@@ -203,7 +203,7 @@
 (defn info-bar []
   (fn []
     (let [turns (re-frame/subscribe [:hints])
-          mistakes (re-frame/subscribe [:fails])
+          mistakes (re-frame/subscribe [:mistakes])
           game-id (re-frame/subscribe [:game-id])]
       [re-com/h-box
        :justify :between

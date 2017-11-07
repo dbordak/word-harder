@@ -81,8 +81,8 @@
   [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
   (debugf "%s disconnected; removing from active games" uid)
   (doseq [game-info (db/get-games-by-player uid)]
-    (debugf "Removing %s from game %d" uid (:id game-info))
-    (db/set-player (:id game-info) (game/player-number game-info uid) nil)
+    (debugf "Removing %s from game %s" uid (:id game-info))
+    (db/set-player (:id game-info) (db/player-number uid) nil)
     (send-updated-game-state (:id game-info) nil)))
 
 (defmethod -event-msg-handler :game/get-wordlists
@@ -114,7 +114,7 @@
 
 (defmethod -event-msg-handler :game/join
   [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
-  (debugf "Player %s attempting to join game %d" uid ?data)
+  (debugf "Player %s attempting to join game %s" uid ?data)
   (let [game-info (db/get-game ?data)
         player-1 (:p1 game-info)
         player-2 (:p2 game-info)]
@@ -145,7 +145,7 @@
 
 (defmethod -event-msg-handler :game/claim
   [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
-  (debugf "%s tried to claim first player in game %d" uid ?data)
+  (debugf "%s tried to claim first player in game %s" uid ?data)
   (let [game-info (db/get-game ?data)]
     (when (nil? (:turn game-info))
       (game/set-turn game-info uid)
@@ -155,7 +155,7 @@
   [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
   (debugf "%s tried to set a hint." uid)
   (let [game-info (db/get-game (:id ?data))]
-    (when (= (:turn game-info) (game/player-number game-info uid))
+    (when (= (:turn game-info) (db/player-number uid))
       (db/set-hint (:id ?data) (:hint ?data))
       (send-updated-game-state (:id ?data) uid))))
 
@@ -163,7 +163,7 @@
   [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
   (debugf "%s tried to touch %s" uid (:word ?data))
   (let [game-info (db/get-game (:id ?data))]
-    (when (= (- 3 (:turn game-info)) (game/player-number game-info uid))
+    (when (= (- 3 (:turn game-info)) (db/player-number uid))
       (db/update-board (:id ?data)
                        (:board (game/touch-space-in-game! game-info (:word ?data))))
       (let [post-data (db/get-game (:id ?data))]
@@ -176,7 +176,7 @@
   [{:as ev-msg :keys [event id uid ?data ring-req ?reply-fn send-fn]}]
   (debugf "%s tried to pass" uid)
   (let [game-info (db/get-game ?data)]
-    (when (= (- 3 (:turn game-info)) (game/player-number game-info uid))
+    (when (= (- 3 (:turn game-info)) (db/player-number uid))
       (game/next-turn game-info)
       (when (<= (:hints (db/get-game ?data)) 0)
         (db/game-over ?data false))

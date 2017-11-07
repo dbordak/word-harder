@@ -53,9 +53,9 @@
    (:hints (:game db))))
 
 (re-frame/reg-sub
- :fails
+ :mistakes
  (fn [db]
-   (:fails (:game db))))
+   (:mistakes (:game db))))
 
 (re-frame/reg-sub
  :won

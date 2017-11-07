@@ -54,7 +54,7 @@
 (re-frame/reg-event-db
  :game/join
  (fn [db _]
-   (chsk-send! [:game/join (js/parseInt (:game-id-input db))])
+   (chsk-send! [:game/join (clojure.string/upper-case (:game-id-input db))])
    db))
 
 (re-frame/reg-event-db

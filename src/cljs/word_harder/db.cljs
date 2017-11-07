@@ -25,7 +25,7 @@
           :won nil
           :turn nil
           :hints 9
-          :fails 9
+          :mistakes 9
           :hint nil
           :p1 nil
           :p2 nil

@@ -91,9 +91,9 @@
     (db/next-turn (:id game-info))
     (db/advance-turn (:id game-info))))
 
-(defn decrement-fails [game-info]
-  (if (> (:fails game-info) 0)
-    (db/decrement-fails (:id game-info))
+(defn decrement-mistakes [game-info]
+  (if (> (:mistakes game-info) 0)
+    (db/decrement-mistakes (:id game-info))
     (db/decrement-hints (:id game-info))))
 
 (defn touch-space! [game-info space]
@@ -101,36 +101,31 @@
         color (touched-color space player)]
     (cond
       (= color "b") (db/game-over (:id game-info) false)
-      (= color "w") (do (decrement-fails game-info)
+      (= color "w") (do (decrement-mistakes game-info)
                         (next-turn game-info)))
     (touched-space space player)))
 
 ;; Game Info functions
 
-(defn player-number [game-info player-uuid]
-  (cond
-    (= player-uuid (:p1 game-info)) 1
-    (= player-uuid (:p2 game-info)) 2
-    :else 0))
-
 (defn hide-game-info [game-info player-uuid]
   (let [board (:board game-info)
-        player (player-number game-info player-uuid)]
-    (when (not= player 0)
+        player (db/player-number player-uuid)]
+    (when (not (nil? player))
       (assoc game-info :board (hide-board board player)))))
 
 (defn touch-space-in-game! [game-info word]
-  (let [board (:board game-info)
-        new-board (assoc board word (touch-space! game-info (get board word)))]
-    ;; end game if there are no more greens for either player
-    (if (check-for-victory new-board)
-      (db/game-over (:id game-info) true)
-      ;; automatically end turn if there are no more greens for this toucher
-      (if (check-for-completion new-board (:turn game-info))
-        (db/next-turn (:id game-info))))
-    (assoc game-info :board new-board)))
+  (if-let [space (get (:board game-info) word)]
+    (let [new-board (assoc (:board game-info) word (touch-space! game-info space))]
+      ;; end game if there are no more greens for either player
+      (if (check-for-victory new-board)
+        (db/game-over (:id game-info) true)
+        ;; automatically end turn if there are no more greens for this toucher
+        (if (check-for-completion new-board (:turn game-info))
+          (db/next-turn (:id game-info))))
+      (assoc game-info :board new-board))
+    game-info))
 
 (defn set-turn [game-info player-uuid]
-  (let [player (player-number game-info player-uuid)]
-    (when (not= player 0)
+  (let [player (db/player-number player-uuid)]
+    (when (not (nil? player))
       (db/set-turn (:id game-info) player))))
