@@ -3,6 +3,8 @@
 =word-harder= is an implementation of [[https://boardgamegeek.com/boardgame/224037/codenames-duet][Codenames Duet]] by Vlaada
 Chvatil.
 
+No running copy of it since Heroku killed their free plan :(
+
 [[./screenshots/title_screen.png]]
 
 
